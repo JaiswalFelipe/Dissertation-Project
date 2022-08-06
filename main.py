@@ -301,8 +301,8 @@ def main():
     parser.add_argument('--img_dir', type=str, required=False, help='Dataset path.')
     parser.add_argument('--mask_dir', type=str, required=False, help='Dataset path.')
     
-    parser.add_argument('--img_dir', type=str, required=False, help='Dataset path.')
-    parser.add_argument('--mask_dir', type=str, required=False, help='Dataset path.')
+    parser.add_argument('--val_img_dir', type=str, required=False, help='Dataset path.')
+    parser.add_argument('--val_mask_dir', type=str, required=False, help='Dataset path.')
 
     parser.add_argument('--testing_images_path', type=str, required=False, help='Dataset path.')
     #parser.add_argument('--testing_masks_path', type=str, required=True, help='Dataset path.')
@@ -340,7 +340,7 @@ def main():
         #                       args.output_path)
         
         print('---- validation data ----')
-        validation_set = NGDataset(args.img_dir, args.mask_dir, args.output_path)
+        validation_set = NGDataset(args.val_img_dir, args.val_mask_dir, args.output_path)
 
         if args.weight_sampler is False:
             train_loader = torch.utils.data.DataLoader(train_set, batch_size=args.batch_size,
