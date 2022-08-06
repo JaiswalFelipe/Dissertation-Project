@@ -298,15 +298,15 @@ def main():
                         help='Path to to save outcomes (such as images and trained models) of the algorithm.')
 
     # dataset options
-    parser.add_argument('--training_images_path', type=str, required=True, help='Dataset path.')
-    parser.add_argument('--training_masks_path', type=str, required=True, help='Dataset path.')
+    parser.add_argument('--training_images_path', type=str, required=False, help='Dataset path.')
+    parser.add_argument('--training_masks_path', type=str, required=False, help='Dataset path.')
     
-    parser.add_argument('--validation_images_path', type=str, required=True, help='Dataset path.')
-    parser.add_argument('--validation_masks_path', type=str, required=True, help='Dataset path.')
+    parser.add_argument('--validation_images_path', type=str, required=False, help='Dataset path.')
+    parser.add_argument('--validation_masks_path', type=str, required=False, help='Dataset path.')
 
-    parser.add_argument('--testing_images_path', type=str, required=True, help='Dataset path.')
+    parser.add_argument('--testing_images_path', type=str, required=False, help='Dataset path.')
     #parser.add_argument('--testing_masks_path', type=str, required=True, help='Dataset path.')
-    parser.add_argument('--testing_images', type=str, nargs="+", required=True, help='Testing image names.')
+    parser.add_argument('--testing_images', type=str, nargs="+", required=False, help='Testing image names.')
     
     parser.add_argument('--crop_size', type=int, required=False, help='Crop size.')
     parser.add_argument('--stride_crop', type=int, required=False, help='Stride size')
