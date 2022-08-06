@@ -334,13 +334,13 @@ def main():
 
     if args.operation == 'Train':
         print('---- training data ----')
-        train_set = NGDataset(args.img_path, args.mask_path, args.output_path)
+        train_set = NGDataset(args.img_dir, args.mask_dir, args.output_path)
 
         #train_set = DataLoader('Train', args.dataset_path, args.training_images, args.crop_size, args.stride_crop,
         #                       args.output_path)
         
         print('---- validation data ----')
-        validation_set = NGDataset(args.vali_img_path, args.vali_mask_path, args.output_path)
+        validation_set = NGDataset(args.img_dir, args.mask_dir, args.output_path)
 
         if args.weight_sampler is False:
             train_loader = torch.utils.data.DataLoader(train_set, batch_size=args.batch_size,
