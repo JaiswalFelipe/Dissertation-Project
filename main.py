@@ -298,11 +298,11 @@ def main():
                         help='Path to to save outcomes (such as images and trained models) of the algorithm.')
 
     # dataset options
-    parser.add_argument('--training_images_path', type=str, required=False, help='Dataset path.')
-    parser.add_argument('--training_masks_path', type=str, required=False, help='Dataset path.')
+    parser.add_argument('--img_dir', type=str, required=False, help='Dataset path.')
+    parser.add_argument('--mask_dir', type=str, required=False, help='Dataset path.')
     
-    parser.add_argument('--validation_images_path', type=str, required=False, help='Dataset path.')
-    parser.add_argument('--validation_masks_path', type=str, required=False, help='Dataset path.')
+    parser.add_argument('--img_dir', type=str, required=False, help='Dataset path.')
+    parser.add_argument('--mask_dir', type=str, required=False, help='Dataset path.')
 
     parser.add_argument('--testing_images_path', type=str, required=False, help='Dataset path.')
     #parser.add_argument('--testing_masks_path', type=str, required=True, help='Dataset path.')
