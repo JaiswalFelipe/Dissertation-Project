@@ -153,7 +153,7 @@ def validate(validation_loader, net, epoch, output_path):
                 occur_vals = outs.permute(0, 2, 3, 1).cpu().detach().numpy()
 
                 prob_im[:,:,:,:] += soft_outs_p[j, :, :, :]
-                occur_im[:,:,:,:] += occur_vals[j, :, :, :]
+                occur_im[:,:,:,:] += 1
 
         # normalize to remove non-predicted pixels - if there is one
         occur_im[np.where(occur_im == 0)] = 1
@@ -396,7 +396,7 @@ def main():
             scheduler.step()
     elif args.operation == 'Test':
         print('---- testing data ----')
-        test_set = DataLoader('Test', args.dataset_path, args.training_images, args.crop_size, args.stride_crop,
+        test_set = DataLoader('Test', args.testing_images_path, args.testing_images, args.crop_size, args.stride_crop,
                               args.output_path)
         test_loader = torch.utils.data.DataLoader(test_set, batch_size=args.batch_size,
                                                   shuffle=False, num_workers=NUM_WORKERS, drop_last=False)
