@@ -29,10 +29,10 @@ from osgeo import gdal
 
 
 # Settings
-image_path = '/content/drive/MyDrive/Dissertation/ng_data/tile_1986_mask.tif'
-division = 16
-cur_map = np.zeros(256).astype(int)
-output_path = '/content/drive/MyDrive/Dissertation/csv_files/coords.csv' # include csv name
+image_path = ''
+division = 16 # divisor of the whole image 
+cur_map = np.zeros(256).astype(int) # to identify current map (for validation pipeline purposes)
+output_path = '' # include csv name
 
 
 # patcher
