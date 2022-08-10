@@ -191,11 +191,12 @@ class NGTest(data.Dataset):
 # needs a separate class because in validation, we load patches instead of whole images
 # along with their coordinates for reconstruction
 class NGValid(data.Dataset):
-  def __init__(self, csv_file, img_dir, mask_dir, output_path):
+  def __init__(self, csv_file, csv_dir, img_dir, mask_dir, output_path):
 
     #self.dataset_input_path = dataset_input_path
     #self.images = images
     self.coords = pd.read_csv(csv_file)
+    self.csv_dir = csv_dir
     self.img_dir = img_dir
     self.mask_dir = mask_dir
     self.images = os.listdir(img_dir)
