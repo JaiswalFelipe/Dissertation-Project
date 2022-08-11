@@ -257,7 +257,7 @@ class NGValid(data.Dataset):
         # Normalization.
         normalize_images(img, self.mean, self.std)
 
-        img, label = data_augmentation(img, label)
+        #img, label = data_augmentation(img, label)
 
         img = np.transpose(img, (2, 0, 1))
 
