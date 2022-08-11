@@ -191,7 +191,7 @@ class NGTest(data.Dataset):
 # needs a separate class because in validation, we load patches instead of whole images
 # along with their coordinates for reconstruction
 class NGValid(data.Dataset):
-  def __init__(self, csv_file, img_dir, mask_dir, output_path):
+  def __init__(self, img_dir, mask_dir, csv_file, output_path):
 
     #self.dataset_input_path = dataset_input_path
     #self.images = images
@@ -202,7 +202,7 @@ class NGValid(data.Dataset):
     self.masks = os.listdir(mask_dir)
 
     #if csv_file is not None:
-    self.coords = pd.read_csv(csv_file)
+    self.coords = pd.from_csv(csv_file)
 
     self.output_path = output_path
 
@@ -210,8 +210,8 @@ class NGValid(data.Dataset):
     # data and label
     self.data, self.labels = self.load_images()
     #self.data[np.where(self.data < -1.0e+38)] = 0  # remove extreme negative values (probably NO_DATA values)
-    print(self.data.ndim, self.data.shape, self.data[0].shape, np.min(self.data), np.max(self.data),
-              self.labels.shape, np.bincount(self.labels.astype(int).flatten()))
+    #print(self.data.ndim, self.data.shape, self.data[0].shape, np.min(self.data), np.max(self.data),
+    #          self.labels.shape, np.bincount(self.labels.astype(int).flatten()))
 
     if self.data.ndim == 4:  # if all images have the same shape
             self.num_channels = self.data.shape[-1]  # get the number of channels
