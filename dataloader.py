@@ -269,3 +269,6 @@ class NGValid(data.Dataset):
 
     # Returning to iterator.
     return img.float(), label, cur_map, cur_x, cur_y
+  
+  def __len__(self):
+    return len(self.data)
