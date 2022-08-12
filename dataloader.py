@@ -7,6 +7,7 @@ Original file is located at
     https://colab.research.google.com/drive/15FbCs2zuwOE2rkVPQpw5vDkd3Q7upd9W
 """
 
+import re
 import os
 import sys
 import numpy as np
@@ -191,53 +192,59 @@ class NGTest(data.Dataset):
 # needs a separate class because in validation, we load patches instead of whole images
 # along with their coordinates for reconstruction
 class NGValid(data.Dataset):
-  def __init__(self, csv_dir, img_dir, mask_dir, output_path):
+  def __init__(self, img_dir, mask_dir, output_path):
 
     #self.dataset_input_path = dataset_input_path
     #self.images = images
-    self.csv_dir = csv_dir
     self.img_dir = img_dir
     self.mask_dir = mask_dir
     self.images = os.listdir(img_dir)
     self.masks = os.listdir(mask_dir)
 
-    self.csv_path = csv_dir + '\coords.csv'
-
-    #if csv_file is not None:
-    self.coords = pd.read_csv(self.csv_path)
-
     self.output_path = output_path
 
 
     # data and label
-    self.data, self.labels = self.load_images()
-    #self.data[np.where(self.data < -1.0e+38)] = 0  # remove extreme negative values (probably NO_DATA values)
-    #print(self.data.ndim, self.data.shape, self.data[0].shape, np.min(self.data), np.max(self.data),
-    #          self.labels.shape, np.bincount(self.labels.astype(int).flatten()))
+    self.data, self.labels, self.cur_maps, self.cur_xs, self.cur_ys = self.load_images()
+
+    print(self.data.ndim, self.data.shape, self.data[0].shape, np.min(self.data), np.max(self.data),
+          self.labels.shape, np.bincount(self.labels.astype(int).flatten()))
 
     if self.data.ndim == 4:  # if all images have the same shape
-            self.num_channels = self.data.shape[-1]  # get the number of channels
+       self.num_channels = self.data.shape[-1]  # get the number of channels
     else:
-            self.num_channels = self.data[0].shape[-1]  # get the number of channels
+       self.num_channels = self.data[0].shape[-1]  # get the number of channels
 
     self.num_classes = 2  # binary - two classes
     # negative classes will be converted into 2 so they can be ignored in the loss
     self.labels[np.where(self.labels < 0)] = 2
-
+    
     print('num_channels and labels', self.num_channels, self.num_classes, np.bincount(self.labels.flatten()))
 
     #self.distrib, self.gen_classes = self.make_dataset()
 
     self.mean, self.std = compute_image_mean(self.data)
 
-        
-    def load_images(self):
+
+  def load_images(self):
         images = []
+        cur_maps = []
+        cur_xs = []
+        cur_ys = []
         masks = []
         for img in self.images:
             temp_image = imageio.imread(os.path.join(self.img_dir, img + '')).astype(np.float64)
             temp_image[np.where(temp_image < -1.0e+38)] = 0 # remove extreme negative values (probably NO_DATA values)
             
+            # Extracting coordinates
+            fn_parse = str(img.replace('.tif', ''))
+            cur_map = str(re.split("_", fn_parse)[0])
+            cur_x = str(re.split("_", fn_parse)[1])
+            cur_y = str(re.split("_", fn_parse)[-1])
+
+            cur_maps.append(cur_map)
+            cur_xs.append(cur_x)
+            cur_ys.append(cur_y)
             images.append(temp_image)
 
         for msk in self.masks:
@@ -246,29 +253,28 @@ class NGValid(data.Dataset):
 
             masks.append(temp_mask)
 
-        return np.asarray(images), np.asarray(masks)
+        return np.asarray(images), np.asarray(masks), cur_maps, cur_xs, cur_ys
 
 
-    def __getitem__(self, index):
-        # Reading items from list.
-        cur_map, cur_x, cur_y = self.coords.iloc[index, 0], self.coords.iloc[index, 1], self.coords.iloc[index, 2]
+  def __getitem__(self, index):
+    
+    #Reading items from list.
+    cur_map, cur_x, cur_y = self.cur_maps[index], self.cur_xs[index], self.cur_ys[index]
 
-        img = np.copy(self.data[cur_map][cur_x, cur_y, :])
-        label = np.copy(self.labels[cur_map][cur_x, cur_y])
+    img = np.copy(self.data[cur_map][cur_x, cur_y, :])
+    label = np.copy(self.labels[cur_map][cur_x, cur_y])
 
-        # Normalization.
-        normalize_images(img, self.mean, self.std)
+    # Normalization.
+    normalize_images(img, self.mean, self.std) # check data_utils.py
+    
+    # Data augmentation
+    #img, label = data_augmentation(img, label)
+     
+    img = np.transpose(img, (2, 0, 1))
 
-        img, label = data_augmentation(img, label)
+    # Turning to tensors.
+    img = torch.from_numpy(img.copy())
+    label = torch.from_numpy(label.copy())
 
-        img = np.transpose(img, (2, 0, 1))
-
-        # Turning to tensors.
-        img = torch.from_numpy(img.copy())
-        label = torch.from_numpy(label.copy())
-
-        # Returning to iterator.
-        return img.float(), label, cur_map, cur_x, cur_y
-
-    def __len__(self):
-        return len(self.data)
+    # Returning to iterator.
+    return img.float(), label, cur_map, cur_x, cur_y
