@@ -250,8 +250,10 @@ class NGValid(data.Dataset):
   def __getitem__(self, index):
     
     #Reading items from list.
-    cur_map, cur_x, cur_y = self.cur_maps[index], self.cur_xs[index], self.cur_ys[index]
-
+    cur_map = self.cur_maps[index]
+    cur_x = self.cur_xs[index]
+    cur_y = self.cur_ys[index]
+    
     img = np.copy(self.data[cur_map][cur_x, cur_y, :])
     label = np.copy(self.labels[cur_map][cur_x, cur_y])
 
