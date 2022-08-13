@@ -254,6 +254,10 @@ class NGValid(data.Dataset):
     cur_x = self.cur_xs[index]
     cur_y = self.cur_ys[index]
     
+    cur_map = int(cur_map)
+    cur_X = int(cur_x)
+    cur_y = int(cur_y)
+    
     img = np.copy(self.data[cur_map][cur_x, cur_y, :])
     label = np.copy(self.labels[cur_map][cur_x, cur_y])
 
