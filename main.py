@@ -143,8 +143,8 @@ def validate(validation_loader, net, epoch, output_path):
 
                 soft_outs_p = soft_outs.permute(0, 2, 3, 1).cpu().detach().numpy()
 
-                prob_im[cur_map][cur_x, cur_y, :] += soft_outs_p[j, :, :, :]
-                occur_im[cur_map][cur_x, cur_y, :] += 1
+                prob_im[cur_map][:cur_x, :cur_y, :] += soft_outs_p[j, :, :, :]
+                occur_im[cur_map][:cur_x, :cur_y, :] += 1
 
         # normalize to remove non-predicted pixels - if there is one
         occur_im[np.where(occur_im == 0)] = 1
