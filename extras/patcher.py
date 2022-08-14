@@ -53,8 +53,8 @@ def image_patcher(img_name, input_file, output_folder, division):
   #ymins = []
   
   # starting xmax and ymin for pixel-wise patch naming
-  cur_x = 250 
-  cur_y = 250
+  cur_x = 0 
+  cur_y = 0
 
   # lists for pixel-wise patching sanity check
   #cur_xs = []
