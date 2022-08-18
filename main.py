@@ -381,7 +381,7 @@ def main():
         #                       args.output_path)
         
         print('---- validation data ----')
-        validation_set = NGValid(args.val_img_dir, args.val_mask_dir, args.org_mask_dir, args.crop_size, kargs.output_path)
+        validation_set = NGValid(args.val_img_dir, args.val_mask_dir, args.org_mask_dir, args.crop_size, args.output_path)
 
         if args.weight_sampler is False:
             train_loader = torch.utils.data.DataLoader(train_set, batch_size=args.batch_size,
