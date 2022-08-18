@@ -308,6 +308,7 @@ def main():
     
     parser.add_argument('--val_img_dir', type=str, required=False, help='Dataset path.')
     parser.add_argument('--val_mask_dir', type=str, required=False, help='Dataset path.')
+    parser.add_argument('--org_mask_shape', nargs='+', type=int, required=False, help='Original mask shape')
 
     parser.add_argument('--testing_images_path', type=str, required=False, help='Dataset path.')
     parser.add_argument('--testing_images', type=str, nargs="+", required=False, help='Testing image names.')
