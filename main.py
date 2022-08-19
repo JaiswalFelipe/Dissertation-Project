@@ -205,7 +205,7 @@ def validate(validation_loader, net, epoch, output_path):
         
         # labels (lbl) here are patchwise so pred should also be patchwise
         ###NUMBER82 ---UNLESS WE MAKE an array for labels (recreate the mask as well then flatten)---###
-        lbl = validation_loader.dataset.original_mask.flatten() # = labels on train
+        lbl = validation_loader.dataset.org_mask.flatten() # = labels on train
         
         # so soft_outs_p should be flattened instead of pred
         ###---FLATTEN prob_im_argmax if NUMBER82 is possible (which makes more sense)---### 
