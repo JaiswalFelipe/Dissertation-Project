@@ -167,10 +167,10 @@ def validate(validation_loader, net, epoch, output_path):
                 soft_outs_p = soft_outs.permute(0, 2, 3, 1).cpu().detach().numpy()
 
 
-                prob_im[cur_map][cur_x:cur_x + validation_loader.dataset.crop_size, 
+                prob_im[:, cur_x:cur_x + validation_loader.dataset.crop_size, 
                         cur_y:cur_y + validation_loader.dataset.crop_size, :] += soft_outs_p[j, :, :, :]
 
-                occur_im[cur_map][cur_x:cur_x + validation_loader.dataset.crop_size, 
+                occur_im[:, cur_x:cur_x + validation_loader.dataset.crop_size, 
                         cur_y:cur_y + validation_loader.dataset.crop_size, :] += 1
         
 
@@ -193,8 +193,8 @@ def validate(validation_loader, net, epoch, output_path):
         # WORK AFTER IMAGE ARRAY CREATION IS DONE: THIS IS IMAGE SAVING
         #for k, img_n in enumerate(validation_loader.dataset.images):
             # Saving predictions.
-        imageio.imwrite(os.path.join(output_path, img_n + '_pred_epoch_' + str(epoch) + '.png'),
-                            prob_im_argmax[k]*255)
+        imageio.imwrite(os.path.join(output_path, 'im' + '_pred_epoch_' + str(epoch) + '.png'),
+                            prob_im_argmax[0]*255)
         # LINE 71  WILL BE THEN prob_im_argmax*255
             
         
