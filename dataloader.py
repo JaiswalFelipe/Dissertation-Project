@@ -250,18 +250,14 @@ class NGValid(data.Dataset):
             temp_image = imageio.imread(os.path.join(self.img_dir, img + '')).astype(np.float64)
             temp_image[np.where(temp_image < -1.0e+38)] = 0 # remove extreme negative values (probably NO_DATA values)
             
+            images.append(temp_image)
+
             # Extracting coordinates
             fn_parse = str(img.replace('.tif', ''))
-            cur_map, cur_x, cur_y = str(re.split("_", fn_parse)[0]), str(re.split("_", fn_parse)[1]), str(re.split("_", fn_parse)[-1])
-            #cur_x, cur_y = str(re.split("_", fn_parse)[1]), str(re.split("_", fn_parse)[-1])
-            #cur_x = str(re.split("_", fn_parse)[1])
-            #cur_y = str(re.split("_", fn_parse)[-1])
-
-            tup_coords = (int(cur_map), int(cur_x), int(cur_y))
-            #tup_coords = (int(cur_x), int(cur_y))
+            cur_map, xmin, ymax, xmax, ymin = str(re.split("_", fn_parse)[0]), str(re.split("_", fn_parse)[1]), str(re.split("_", fn_parse)[2]), str(re.split("_", fn_parse)[3]), str(re.split("_", fn_parse)[-1])
+            tup_coords = (int(cur_map), int(xmin), int(ymax), int(xmax), int(ymin))
+            
             coords.append(tup_coords)
-
-            images.append(temp_image)
 
         for msk in self.masks:
             temp_mask = imageio.imread(os.path.join(self.mask_dir, msk + '')).astype(int)
@@ -280,22 +276,14 @@ class NGValid(data.Dataset):
   def __getitem__(self, index):
     
     #Reading items from list.
-    #cur_map = self.coords[index][0]#, self.coords[index][1], self.coords[index][-1]
-    cur_map = self.coords[index][0]
-    cur_x = self.coords[index][1]
-    cur_y = self.coords[index][-1]
+    cur_map, xmin, ymax, xmax, ymin = self.coords[index][0], self.coords[index][1], self.coords[index][2], self.coords[index][3] ,self.coords[index][-1]  
     
     #img = np.copy(self.data[cur_map][cur_x:cur_x + self.crop_size, 10:10 + self.crop_size, :])
     img = np.copy(self.data[index])
     label = np.copy(self.labels[index])
                   
     #label = np.copy(self.labels[cur_map][cur_x:cur_x + self.crop_size, 10:10 + self.crop_size])
-    #print(index)
-    #print(img.shape)
-    #print(label.shape)
-    #print(cur_map, cur_x, cur_y)#self.crop_size
     
-
     # Normalization.
     normalize_images(img, self.mean, self.std) # check data_utils.py
     
@@ -310,7 +298,7 @@ class NGValid(data.Dataset):
     
     
     # Returning to iterator.
-    return img.float(), label, cur_map, cur_x, cur_y
+    return img.float(), label, cur_map, xmin, ymax, xmax, ymin
     #ipdb.set_trace()
   def __len__(self):
     return len(self.data)
