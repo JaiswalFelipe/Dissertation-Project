@@ -133,23 +133,13 @@ def validate(validation_loader, net, epoch, output_path):
                          validation_loader.dataset.org_mask.shape[2], validation_loader.dataset.num_classes], dtype=int)
     
     occur_im = np.rot90(occur_im)
-    # pad for mask
-    #labs_pad = np.zeros([validation_loader.dataset.org_mask.shape[0],
-    #                    validation_loader.dataset.org_mask.shape[1],
-    #                    validation_loader.dataset.org_mask.shape[2], validation_loader.dataset.num_classes], dtype=np.float32)
-    
-
-    #labs_occur_pad = np.zeros([validation_loader.dataset.org_mask.shape[0],
-    #                     validation_loader.dataset.org_mask.shape[1],
-    #                     validation_loader.dataset.org_mask.shape[2], validation_loader.dataset.num_classes], dtype=int)
-    
 
 
     with torch.no_grad():
         # Iterating over batches.
         for i, data in enumerate(validation_loader):
             print("what is i", i)
-            print("what is data len", len(data)) # is list
+            #print("what is data len", len(data)) # is list
             
             # Obtaining images, labels and paths for batch.
             inps, labs, cur_maps, xmins, ymaxs, xmaxs, ymins = data    
@@ -163,9 +153,7 @@ def validate(validation_loader, net, epoch, output_path):
             # labs_c = Variable(labs).cuda()
 
             # Forwarding.
-            outs = net(inps_c) # outs = 4 dims (0 = idx ,1 = c, 2 = x, 3 = y) 
-            # IS OUTS an array? an iterable? or patches? 
-            # THEY ARE PATCHES
+            outs = net(inps_c) # outs = 4 dims (0 = idx ,1 = c, 2 = x, 3 = y)       
             #print("outs shape", outs.shape) # torch.Size([1, 2, 250, 250])
             #print("outs[0].shape?",outs[0].shape) #  torch.Size([2, 250, 250])
             #print("outs[1].shape?",outs[1].shape) # only outs[0] has shape now 
@@ -173,8 +161,7 @@ def validate(validation_loader, net, epoch, output_path):
 
             soft_outs = F.softmax(outs, dim=1) # softmax calcs on channels
             print("soft outs shape before forloop", soft_outs.shape)
-            # IS OUTS an array? an iterable? or patches? 
-            # THEY ARE PATCHES
+           
             print("what is i before forloop j", i)
             #print("what is data shape before forloop j", data.shape) # is list
             
@@ -197,12 +184,7 @@ def validate(validation_loader, net, epoch, output_path):
                 print("soft_outs_p on forloop", soft_outs_p.shape) #(5, 250, 250, 2)
                 #print("soft_outs_p shape", soft_outs_p.shape) # (1, 250, 250, 2)
                 #print("soft_outs_p[0].shape?",soft_outs_p[0].shape) # (250, 250, 2)
-                #print("soft_outs_p", soft_outs_p)
-                #print("soft_outs_p unique vals", np.unique(soft_outs_p))
 
-                #img = Image.fromarray(soft_outs_p[0], 'RGB')
-                #img.save('my.png')
-                #img.show()
                 
                 prob_im[:, xmin:xmax, ymax:ymin, :] += soft_outs_p[j, :, :, :]
                 #print("prob_im recon shape", prob_im.shape)
@@ -211,10 +193,6 @@ def validate(validation_loader, net, epoch, output_path):
 
                 occur_im[:, xmin:xmax, ymax:ymin, :] += 1
                 #print("occur_im recon", occur_im.shape)
-
-                #labs_pad[cur_map][xmin:xmax, ymax:ymin, :] += labs[j, :, : , :]
-               
-                #labs_occur_pad[cur_map][xmin:xmax, ymax:ymin, :] += 1
 
             # Wrong recreation but trains and validates
             #for j in range(outs.shape[0]):
@@ -247,6 +225,7 @@ def validate(validation_loader, net, epoch, output_path):
         # pixels with classes not used in the prediction are converted into 0
         prob_im_argmax[np.where(validation_loader.dataset.labels == 2)] = 0
 
+        prob_im_argmax = numpy.rot90(prob_im_argmax, k=1, axes=(0, 1))
         #THIS WILL TAKE dataset.images which is a whole image 4000x4000x23
         # SO WE NEED TO PUT TOGETHER 
         # WORK AFTER IMAGE ARRAY CREATION IS DONE: THIS IS IMAGE SAVING
