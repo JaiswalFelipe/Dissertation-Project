@@ -211,7 +211,6 @@ class NGValid(data.Dataset):
 
     # data and label
     self.data, self.labels, self.coords, self.org_mask = self.load_images()
-    #ipdb.set_trace()
     
 
     print("orginal mask shape:",self.org_mask.shape,
@@ -238,7 +237,7 @@ class NGValid(data.Dataset):
     #self.distrib, self.gen_classes = self.make_dataset()
 
     self.mean, self.std = compute_image_mean(self.data)
-    #ipdb.set_trace()
+    
     
     #print(self.mean, self.std)
   def load_images(self):
@@ -254,7 +253,7 @@ class NGValid(data.Dataset):
 
             # Extracting coordinates
             fn_parse = str(img.replace('.tif', ''))
-            cur_map, xmin, ymax, xmax, ymin = str(re.split("_", fn_parse)[0]), str(re.split("_", fn_parse)[1]), str(re.split("_", fn_parse)[2]), str(re.split("_", fn_parse)[3]), str(re.split("_", fn_parse)[-1])
+            cur_map, xmin, ymax, xmax, ymin = str(re.split("_", fn_parse)[1]), str(re.split("_", fn_parse)[2]), str(re.split("_", fn_parse)[3]), str(re.split("_", fn_parse)[4]), str(re.split("_", fn_parse)[-1])
             tup_coords = (int(cur_map), int(xmin), int(ymax), int(xmax), int(ymin))
             
             coords.append(tup_coords)
