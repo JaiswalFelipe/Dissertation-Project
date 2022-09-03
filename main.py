@@ -123,129 +123,6 @@ def test_full_map(test_loader, net, epoch, output_path):
 
 
 
-def validate(validation_loader, net, epoch, output_path):
-    # Setting network for evaluation mode.
-    net.eval()
-    
-    prob_im = np.zeros([validation_loader.dataset.org_mask.shape[0],
-                        validation_loader.dataset.org_mask.shape[1],
-                        validation_loader.dataset.org_mask.shape[2], validation_loader.dataset.num_classes], dtype=np.float32)
-    
-    occur_im = np.zeros([validation_loader.dataset.org_mask.shape[0],
-                         validation_loader.dataset.org_mask.shape[1],
-                         validation_loader.dataset.org_mask.shape[2], validation_loader.dataset.num_classes], dtype=int)
-  
-   
-    with torch.no_grad():
-        # Iterating over batches.
-        for i, data in enumerate(validation_loader):
-            # Obtaining images, labels and paths for batch.
-            inps, labs, cur_maps, cur_xs, cur_ys = data    
-            # ARE THESE LOADED 1 by 1? OR arrays? 
-            # data IS LOADED AS ITERABLE 
-            
-            ###---SO THEY ARE iterables---### 
-
-            # Casting to cuda variables.
-            inps_c = Variable(inps).cuda()
-            # labs_c = Variable(labs).cuda()
-
-            # Forwarding.
-            outs = net(inps_c) # outs = 4 dims (0 = idx ,1 = c, 2 = x, 3 = y) 
-            # IS OUTS an array? an iterable? or patches? 
-            # THEY ARE PATCHES
-
-            soft_outs = F.softmax(outs, dim=1) # softmax calcs on channels
-            # IS OUTS an array? an iterable? or patches? 
-            # THEY ARE PATCHES
-
-            for j in range(outs.shape[0]):
-                cur_map = cur_maps[j]
-                cur_x = cur_xs[j]
-                cur_y = cur_ys[j]
-
-                soft_outs_p = soft_outs.permute(0, 2, 3, 1).cpu().detach().numpy()
-
-
-                prob_im[:, cur_x:cur_x + validation_loader.dataset.crop_size, 
-                        cur_y:cur_y + validation_loader.dataset.crop_size, :] += soft_outs_p[j, :, :, :]
-
-                occur_im[:, cur_x:cur_x + validation_loader.dataset.crop_size, 
-                        cur_y:cur_y + validation_loader.dataset.crop_size, :] += 1
-        
-
-
-        # normalize to remove non-predicted pixels - if there is one
-        occur_im[np.where(occur_im == 0)] = 1
-        # occur_im are just the patches without calcu?
-
-        # calculate predictions
-        # np.argmax RETURNS THE INDICES OF THE MAX ELEMENT, so axis = -1 are the channels
-        prob_im_argmax = np.argmax(prob_im / occur_im.astype(float), axis=-1) # matrix division element wise
-        # = output is prds on train (line 267 in main.py) 
-        # HERE IT IS ACTUALLY/ SHOULD BE THE WHOLE IMAGE ARRAY
-        
-        # pixels with classes not used in the prediction are converted into 0
-        prob_im_argmax[np.where(validation_loader.dataset.labels == 2)] = 0
-
-        #THIS WILL TAKE dataset.images which is a whole image 4000x4000x23
-        # SO WE NEED TO PUT TOGETHER 
-        # WORK AFTER IMAGE ARRAY CREATION IS DONE: THIS IS IMAGE SAVING
-        #for k, img_n in enumerate(validation_loader.dataset.images):
-            # Saving predictions.
-        imageio.imwrite(os.path.join(output_path, 'im' + '_pred_epoch_' + str(epoch) + '.png'),
-                            prob_im_argmax[0]*255)
-        # LINE 71  WILL BE THEN prob_im_argmax*255
-            
-        
-        # lbl since originally we are passing 1 big image mask, this will contain all the values of 
-        # the mask patches combined (side by side) 
-        # as labels is an array of 256 patches of 250x250 (256, 250, 250)
-        ###---lbl FLATTENING IS OK---###
-        
-        # labels (lbl) here are patchwise so pred should also be patchwise
-        ###NUMBER82 ---UNLESS WE MAKE an array for labels (recreate the mask as well then flatten)---###
-        lbl = validation_loader.dataset.org_mask.flatten() # = labels on train
-        
-        # so soft_outs_p should be flattened instead of pred
-        ###---FLATTEN prob_im_argmax if NUMBER82 is possible (which makes more sense)---### 
-        pred = prob_im_argmax.flatten()  # now flattened like prds on train
-        print(lbl.shape, np.bincount(lbl.flatten()), pred.shape, np.bincount(pred.flatten()))
-
-        acc = accuracy_score(lbl, pred)
-        conf_m = confusion_matrix(lbl, pred)
-        f1_s_w = f1_score(lbl, pred, average='weighted')
-        f1_s_micro = f1_score(lbl, pred, average='micro')
-        f1_s_macro = f1_score(lbl, pred, average='macro')
-        kappa = cohen_kappa_score(lbl, pred)
-        jaccard = jaccard_score(lbl, pred)
-        tau, p = stats.kendalltau(lbl, pred)
-
-        _sum = 0.0
-        for k in range(len(conf_m)):
-            _sum += (conf_m[k][k] / float(np.sum(conf_m[k])) if np.sum(conf_m[k]) != 0 else 0)
-        nacc = _sum / float(validation_loader.dataset.num_classes)
-
-        print("---- Validation/Test -- Epoch " + str(epoch) +
-              " -- Time " + str(datetime.datetime.now().time()) +
-              " Overall Accuracy= " + "{:.4f}".format(acc) +
-              " Normalized Accuracy= " + "{:.4f}".format(nacc) +
-              " F1 score weighted= " + "{:.4f}".format(f1_s_w) +
-              " F1 score micro= " + "{:.4f}".format(f1_s_micro) +
-              " F1 score macro= " + "{:.4f}".format(f1_s_macro) +
-              " Kappa= " + "{:.4f}".format(kappa) +
-              " Jaccard= " + "{:.4f}".format(jaccard) +
-              " Tau= " + "{:.4f}".format(tau) +
-              " Confusion Matrix= " + np.array_str(conf_m).replace("\n", "")
-              )
-
-        sys.stdout.flush()
-
-    return acc, nacc, f1_s_w, kappa, conf_m
-
-
-
-
 def train(train_loader, model, criterion, optimizer, epoch):
     # Setting network for training mode.
     model.train()
@@ -339,14 +216,12 @@ def main():
                         help='Path to to save outcomes (such as images and trained models) of the algorithm.')
 
     # dataset options
+    # Training
     parser.add_argument('--img_dir', type=str, required=False, help='Dataset path.')
     parser.add_argument('--mask_dir', type=str, required=False, help='Dataset path.')
-    
-    parser.add_argument('--val_img_dir', type=str, required=False, help='Dataset path.')
-    parser.add_argument('--val_mask_dir', type=str, required=False, help='Dataset path.')
-    parser.add_argument('--org_mask_dir', type=str, required=False, help='Dataset path.')
 
-    parser.add_argument('--testing_images_path', type=str, required=False, help='Dataset path.')
+    # Vali/Test
+    parser.add_argument('--dataset_path', type=str, required=True, help='Dataset path.')
     parser.add_argument('--testing_images', type=str, nargs="+", required=False, help='Testing image names.')
     
     parser.add_argument('--crop_size', type=int, required=False, help='Crop size.')
@@ -381,7 +256,8 @@ def main():
         #                       args.output_path)
         
         print('---- validation data ----')
-        validation_set = NGValid(args.val_img_dir, args.val_mask_dir, args.org_mask_dir, args.crop_size, args.output_path)
+        validation_set = NGTest(args.dataset_path, args.testing_images, args.crop_size, args.stride_crop,
+                              args.output_path)
 
         if args.weight_sampler is False:
             train_loader = torch.utils.data.DataLoader(train_set, batch_size=args.batch_size,
@@ -430,14 +306,14 @@ def main():
             writer.add_scalar('Train/acc', t_nacc, epoch)
             if epoch % VAL_INTERVAL == 0:
                 # Computing test.
-                acc, nacc, f1_s, kappa, track_cm = validate(validation_loader, model, epoch, args.output_path)
+                acc, nacc, f1_s, kappa, track_cm = test_full_map(validation_loader, model, epoch, args.output_path)
                 writer.add_scalar('Test/acc', nacc, epoch)
                 save_best_models(model, args.output_path, best_records, epoch, kappa)
                 # patch_acc_loss=None, patch_occur=None, patch_chosen_values=None
             scheduler.step()
     elif args.operation == 'Test':
         print('---- testing data ----')
-        test_set = DataLoader('Test', args.testing_images_path, args.testing_images, args.crop_size, args.stride_crop,
+        test_set = NGTest(args.dataset_path, args.testing_images, args.crop_size, args.stride_crop,
                               args.output_path)
         test_loader = torch.utils.data.DataLoader(test_set, batch_size=args.batch_size,
                                                   shuffle=False, num_workers=NUM_WORKERS, drop_last=False)
