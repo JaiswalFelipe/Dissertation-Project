@@ -274,8 +274,14 @@ def main():
         # Setting optimizer.
         optimizer = optim.Adam(model.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay,
                                betas=(0.9, 0.99))
-        # optimizer = optim.SGD(model.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay, momentum=0.9)
+        #optimizer = optim.SGD(model.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay, momentum=0.9)
+        #optimizer =  optim.Adagrad(model.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay)
+        
         scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=100, gamma=0.1)
+        #scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=5)
+        #scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[30,80], gamma=0.1)
+        
+        
 
         curr_epoch = 1
         best_records = []
